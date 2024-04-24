@@ -34,7 +34,7 @@ The script needs Python version 3.0 or better and the astropy python library tha
 
 ```pip install astropy```
 
-It needs the current location on earth, this should be set in the `polaris_stellarium.py` script, with the `lat=...` and `lon=...` declarations.
+It also needs your current location on earth (latitude, longitude), this should be set in the `polaris_stellarium.py` script in the `lat=...` and `lon=...` declarations.
 
 ### Stellarium setting up
 
@@ -42,8 +42,8 @@ In the `Plugins` tab of the `Configuration` interface the `Telescope Control` pl
 
 ### Running 
 
-You should power-up the Polaris and use the mobile app to setup it as usual in Astro mode, then you'll need to connect the computer on the Polaris WIFI.
-Then you may launch the `polaris_stellarium.py` in the terminal and see some output like the following:
+You should power-up the Polaris, use the mobile app to switch in Astro mode and calibrate it. You should keep the phone connected to the Polaris and the mobile Polaris app open, then you'll have to connect the computer to the Polaris WIFI.
+When the computer network is connected to the Polaris WIFI you may launch the `polaris_stellarium.py` in the terminal and see some output like the following:
 
 ```
 Polaris communication init...
@@ -54,7 +54,8 @@ Polaris communication init...
 Polaris communication init... done
 ```
 
-Then you may use Stellarium to pilot the Polaris !
 You should `Connect` the telescope you added in the Stellarium setting up phase, then you may use the telescope controle interface.
+
+You may now use Stellarium to pilot the Polaris !
 
 
