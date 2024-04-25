@@ -3,6 +3,8 @@
 import sys
 assert sys.version_info >= (3, 0)
 
+import os
+import getopt
 import re
 import asyncio
 import time
@@ -15,28 +17,25 @@ from astropy import units as u
 from astropy.coordinates import AltAz
 
 
-####### Observer location (latitude, longitude)
+####### Globals
 
-lat = 44.42
-lon = 5.12
-
-
-#######
+lat = None
+lon = None
 
 polaris_ip = '192.168.0.1'
 polaris_port = 9090
 local_port = 10001
 
-LOGGING = True
+LOGGING = False
 LOG518 = False
-DEBUG = True
+DEBUG = False
 
 
 ####### Polaris
 
 response_queues = {}
 polaris_current_mode = -1
-polaris_msg_re = re.compile('^(\d\d\d)@([^#]*)#')
+polaris_msg_re = re.compile("^(\d\d\d)@([^#]*)#")
 
 async def polaris_send_msg(writer, msg):
     if DEBUG:
@@ -70,14 +69,19 @@ def polaris_parse_cmd(cmd, args):
         if cmd in response_queues:
             response_queues[cmd].put_nowait(arg_dict)
 
+    elif cmd == "518":
+        None
+
     elif cmd == "519":
         arg_dict = polaris_parse_args(args)
+        if DEBUG:
+            print(f"<<< Polaris: response to command 'goto' ({cmd}) received")
         if cmd in response_queues:
             response_queues[cmd].put_nowait(arg_dict)
 
     else:
         if DEBUG and (cmd != "518" or LOG518):
-            print(f"<<< Polaris: unmatched command {cmd} received")
+            print(f"<<< Polaris: response to command {cmd} received")
 
 
 async def polaris_start_stop_tracking(writer, tracking):
@@ -204,8 +208,46 @@ async def handle_local_input(server_writer, reader, writer):
             if goto_result == -1:
                 print(f"Goto Az.: {az} Alt.: {alt} failed")
 
-async def main():
+async def main(argv):
+    global LOGGING, LOG518, DEBUG
     global response_queues
+    global lat, lon
+
+    usage = f"{os.path.basename(sys.argv[0])} [-dfhl]--lat <latitude> --lon <longitude>"
+    try:
+        opts, args = getopt.getopt(argv,"dhlL",["lat=","lon="])
+    except getopt.GetoptError:
+        print (usage)
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print (usage)
+            sys.exit()
+        elif opt == "--lat":
+            lat = float(arg)
+        elif opt == "--lon":
+            lon = float(arg)
+        elif opt == "-l":
+            LOGGING = True
+        elif opt == "-L":
+            LOGGING = True
+            LOG518 = True
+        elif opt == "-d":
+            DEBUG = True
+    
+    if lat == None or lon == None:
+        print(usage)
+        sys.exit(2)
+
+    print (f"Current location: latitude={lat} longitude={lon}")
+
+    if LOG518:
+        print("Full logging is on")
+    elif LOGGING:
+        print("Logging is on")
+
+    if DEBUG:
+        print("Debug is on")
 
     try:
         server_reader, server_writer = await asyncio.open_connection(polaris_ip, polaris_port)
@@ -223,11 +265,15 @@ async def main():
     async with local_server:
         await asyncio.gather(*tasks)
 
-try:
-    asyncio.run(main())
-except ValueError as value:
-    print(f"{value}\nQuit.")
-except Exception as error:
-    print("Error {error}, quit.")
-except KeyboardInterrupt as kb:
-    print("Keyboard interrupt.")
+
+#######
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(main(sys.argv[1:]))
+    except ValueError as value:
+        print(f"{value}\nQuit.")
+    except Exception as error:
+        print(f"Error {error}, quit.")
+    except KeyboardInterrupt as kb:
+        print("Keyboard interrupt.")

@@ -34,18 +34,23 @@ The script needs Python version 3.0 or better and the astropy python library tha
 
 ```pip install astropy```
 
-It also needs your current location on earth (latitude, longitude), this should be set in the `polaris_stellarium.py` script in the `lat=...` and `lon=...` declarations.
-
 ### Stellarium setting up
 
 In the `Plugins` tab of the `Configuration` interface the `Telescope Control` plugin should be `Load at startup`. After a relaunch of Stellarium a new button is added to the bottom menubar that allow to configure and control telescope, it can be opened using `Command-0`. In the configuration windows a new telescope of kind `External software or a remote computer` should be added.
 
 ### Running 
 
-You should power-up the Polaris, use the mobile app to switch in Astro mode and calibrate it. You should keep the phone connected to the Polaris and the mobile Polaris app open, then you'll have to connect the computer to the Polaris WIFI.
-When the computer network is connected to the Polaris WIFI you may launch the `polaris_stellarium.py` in the terminal and see some output like the following:
+You should power-up the Polaris, use the mobile app to switch to Astro mode and calibrate it. You should keep the mobile Polaris app open and the phone connected to the Polaris, then you'll have to connect the computer to the Polaris WIFI.
+
+When the computer network is connected to the Polaris WIFI you'll have to launch the script in a terminal giving your current location on Earth in `--lat` (latitude) and `--lon` (longitude) options and the `-l` option to enable logging of the exchanged messages:
+
+```polaris_stellarium.py --lat 44.5 --lon 4.42 -l```
+ 
+You should see some output like in the following:
 
 ```
+Current location: latitude=44.5 longitude=4.42
+Logging is on
 Polaris communication init...
 >>> Polaris: msg: 1&284&2&-1#
 <<< Polaris: 284@mode:8;state:0;track:0;speed:0;halfSpeed:0;remNum:;runTime:;photoNum:;#
@@ -54,8 +59,8 @@ Polaris communication init...
 Polaris communication init... done
 ```
 
-You should `Connect` the telescope you added in the Stellarium setting up phase, then you may use the telescope controle interface.
+Then you should `Connect` the telescope you added in the Stellarium setting up phase. 
 
-You may now use Stellarium to pilot the Polaris !
+Now you may use Stellarium to pilot the Polaris !
 
 
