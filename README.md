@@ -30,9 +30,9 @@ This python script is working as a interface between [Stellarium](https://stella
 
 ### Installation
 
-The script needs Python version 3.0 or better and the astropy python library that could be installed using `pip` or `pip3`:
+The script needs Python version 3.0 or better and the [pyephem](https://rhodesmill.org/pyephem) python library that could be installed using `pip` or `pip3`:
 
-```pip install astropy```
+```pip install pyephem```
 
 ### Stellarium setting up
 

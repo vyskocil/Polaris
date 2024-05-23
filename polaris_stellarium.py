@@ -10,12 +10,10 @@ import asyncio
 import time
 from datetime import datetime
 from datetime import timezone
+from math import pi
 
-from astropy.coordinates import EarthLocation,SkyCoord
-from astropy.time import Time
-from astropy import units as u
-from astropy.coordinates import AltAz
-
+# https://rhodesmill.org/pyephem
+import ephem
 
 ####### Globals
 
@@ -156,6 +154,18 @@ async def polaris_init(writer):
 
 ####### Stellarium
 
+def dec2dms(dd):
+   is_positive = dd >= 0
+   dd = abs(dd)
+   minutes,seconds = divmod(dd*3600,60)
+   degrees,minutes = divmod(minutes,60)
+   degrees = degrees if is_positive else -degrees
+   return f"{int(degrees)}:{int(minutes)}:{seconds:.2f}"
+
+def dms2dec(dms):
+    (degree, minute, second, frac_seconds) = re.split('\D+', dms, maxsplit=4)
+    return int(degree) + float(minute) / 60 + float(second) / 3600 + float(frac_seconds) / 360000
+
 def decode_stellarium_packet(s):
     t = int.from_bytes(s[4:11], byteorder='little')
 
@@ -165,15 +175,28 @@ def decode_stellarium_packet(s):
     ra = (24*ra)/0x100000000
     dec = (90*dec)/0x40000000
 
-    observing_location = EarthLocation(lat=lat, lon=lon)  
-    observing_time = Time(datetime.fromtimestamp(t/1E6, tz=timezone.utc), format='datetime')
-    aa = AltAz(location=observing_location, obstime=observing_time)
+    if DEBUG:
+        print(f"<<< Stellarium: t={t} ra={ra} dec={dec}")
 
-    coord = SkyCoord(ra, dec, unit=(u.hour, u.deg)) 
-    altAz = coord.transform_to(aa)
+    observer = ephem.Observer()
+    observer.long = dec2dms(lon)
+    observer.lat = dec2dms(lat)
+    observer.elevation = 0
+    observer.pressure = 0 # no refraction correction.
+    observer.epoch = ephem.J2000
+    observer.date = ephem.Date(datetime.fromtimestamp(t/1E6, tz=timezone.utc))
+
+    if DEBUG:
+        print(f"<<< Stellarium: Observer location lat={observer.lat} lon={observer.lon}")
+
+    target = ephem.FixedBody()
+    target._ra = dec2dms(ra)
+    target._dec = dec2dms(dec)
+    target._epoch = ephem.J2000
+    target.compute(observer)
     if LOGGING:
-        print(f"<<< Stellarium: {observing_time} RA: {int(coord.ra.hms.h)}h{int(coord.ra.hms.m)}mn{coord.ra.hms.s:.5f}s Dec: {coord.dec.deg:.5f}° -> Az.: {altAz.az.deg:.5f}° Alt.: {altAz.alt.deg:.5f}° ")
-    return (altAz.az.deg, altAz.alt.deg)
+        print(f"<<< Stellarium: Date: {observer.date} UT RA: {target.ra} Dec: {target.dec} -> Az.: {target.az} Alt.: {target.alt}")
+    return (dms2dec(str(target.az)), dms2dec(str(target.alt)))
 
 
 ####### network
