@@ -63,4 +63,8 @@ Then you should `Connect` the telescope you added in the Stellarium setting up p
 
 Now you may use Stellarium to pilot the Polaris !
 
+#### Testing the rotations around the alt and azm axis
+
+If you add the `-t` flag to the ```polaris_stellarium.py``` command line args after 10s the Polaris will demonstrate some rotations around the alt and azm axis.
+
 
