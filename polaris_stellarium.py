@@ -27,6 +27,7 @@ local_port = 10001
 LOGGING = False
 LOG518 = False
 DEBUG = False
+TESTS = False
 
 
 ####### Polaris
@@ -83,6 +84,12 @@ def polaris_parse_cmd(cmd, args):
 
 
 async def polaris_start_stop_tracking(writer, tracking):
+    """
+    polaris_start_stop_tracking is used to start or stop tracking
+
+    :param writer: is used to send commands to the Polaris
+    :param tracking: if 1 start tracking at star rotation speed, 0 don't track
+    """
     if tracking:
         if LOGGING:
             print(">>> Polaris: Start tracking")
@@ -95,6 +102,15 @@ async def polaris_start_stop_tracking(writer, tracking):
 
 
 async def polaris_goto(writer, az, alt, tracking):
+    """
+    polaris_goto is used to turn the head to point in (az, alt) direction.
+
+    :param writer: is used to send commands to the Polaris
+    :param az: is the azimuth to point, 0° < az < 360°
+    :param alt: is the altitude to point, -90° < alt < 90° (but the Polaris is hardware limited)
+    :param tracking: if 1 start tracking at star rotation speed, 0 don't track
+    """
+    
     global response_queues
     await polaris_start_stop_tracking(writer, False)
 
@@ -125,6 +141,114 @@ async def polaris_goto(writer, az, alt, tracking):
 
     del response_queues[cmd]
     return ret_dict
+
+
+async def polaris_move(writer, az_axis, alt_axis, time):
+    """
+    polaris_move is used to turn the head around the Azm and Alt axis at some speed
+    and duration a fixed amount of time.
+
+    :param writer: is used to send commands to the Polaris
+    :param az_axis: rotation speed around the Azm axis between -5 and 5
+    :param alt_axis: rotation speed around the Alt axis between -5 and 5
+    :param time: duration of the rotation in seconds
+    """
+    global response_queues
+    cmd_az = '532'
+    cmd_alt = '533'
+    
+    if az_axis != 0:
+        if az_axis > 0:
+            level = az_axis if az_axis <= 5 else 5
+            msg = f"1&{cmd_az}&3&key:0;state:1;level:{level};#"
+        else:
+            level = -az_axis if az_axis >= -5 else 5
+            msg = f"1&{cmd_az}&3&key:1;state:1;level:{level};#"
+        await polaris_send_msg(writer, msg)
+
+    if alt_axis != 0:
+        if alt_axis > 0:
+            level = alt_axis if alt_axis <= 5 else 5
+            msg = f"1&{cmd_alt}&3&key:0;state:1;level:{level};#"
+        else:
+            level = -alt_axis if alt_axis >= -5 else 5
+            msg = f"1&{cmd_alt}&3&key:1;state:1;level:{level};#"
+        await polaris_send_msg(writer, msg)
+
+    await asyncio.sleep(time)
+
+    if az_axis != 0:
+        if az_axis > 0:
+            level = az_axis if az_axis <= 5 else 5
+            msg = f"1&{cmd_az}&3&key:0;state:0;level:{level};#"
+        else:
+            level = -az_axis if az_axis >= -5 else 5
+            msg = f"1&{cmd_az}&3&key:1;state:0;level:{level};#"
+        await polaris_send_msg(writer, msg)
+
+    if alt_axis != 0:
+        if alt_axis > 0:
+            level = alt_axis if alt_axis <= 5 else 5
+            msg = f"1&{cmd_alt}&3&key:0;state:0;level:{level};#"
+        else:
+            level = -az_axis if az_axis >= -5 else 5
+            msg = f"1&{cmd_alt}&3&key:1;state:0;level:{level};#"
+        await polaris_send_msg(writer, msg)
+
+
+async def polaris_stop_move(writer):
+    """
+    polaris_move is used to stop the rotation on both Azm and Alt axis.
+
+    :param writer: is used to send commands to the Polaris
+    """
+    
+    global response_queues
+    cmd_az = '532'
+    cmd_alt = '533'
+    
+    level = 0
+    msg = f"1&{cmd_az}&3&key:0;state:0;level:{level};#"
+    await polaris_send_msg(writer, msg)
+
+    msg = f"1&{cmd_alt}&3&key:1;state:0;level:{level};#"
+    await polaris_send_msg(writer, msg)
+
+
+async def polaris_test_move(writer):
+    global response_queues
+    await asyncio.sleep(10)
+    
+    # speed of the rotation 1 (slowest) ... 5 (fastest)
+    speed = 5
+    # duration of the rotation in seconds
+    duration = 20
+    
+    print("Polaris testing move commands...")
+    print("Stop tracking...")
+    await polaris_start_stop_tracking(writer, 0)
+    print("Move on az axis...")
+    await polaris_move(writer, speed, 0, duration)
+    await asyncio.sleep(3)
+    print("Move in opposite direction on az axis...")
+    await polaris_move(writer, -speed, 0, duration)
+    await asyncio.sleep(3)
+    print("Move on alt axis...")
+    await polaris_move(writer, 0, speed, duration)
+    await asyncio.sleep(3)
+    print("Move in opposite direction on alt axis...")
+    await polaris_move(writer, 0, -speed, duration)
+    await asyncio.sleep(3)
+    print("Move on both axis...")
+    await polaris_move(writer, speed, speed, duration)
+    await asyncio.sleep(3)
+    print("Move in opposite direction on both axis...")
+    await polaris_move(writer, -speed, -speed, duration)
+    await asyncio.sleep(3)
+    print("Stop moving...")
+    await polaris_stop_move(writer)
+    await asyncio.sleep(1)
+    print ("End testing move commands")
 
 
 async def polaris_get_current_mode(writer):
@@ -232,13 +356,13 @@ async def handle_local_input(server_writer, reader, writer):
                 print(f"Goto Az.: {az} Alt.: {alt} failed")
 
 async def main(argv):
-    global LOGGING, LOG518, DEBUG
+    global LOGGING, LOG518, DEBUG, TESTS
     global response_queues
     global lat, lon
 
-    usage = f"{os.path.basename(sys.argv[0])} [-dfhl]--lat <latitude> --lon <longitude>"
+    usage = f"{os.path.basename(sys.argv[0])} [-dfhlLt]--lat <latitude> --lon <longitude>"
     try:
-        opts, args = getopt.getopt(argv,"dhlL",["lat=","lon="])
+        opts, args = getopt.getopt(argv,"dhlLt",["lat=","lon="])
     except getopt.GetoptError:
         print (usage)
         sys.exit(2)
@@ -257,6 +381,8 @@ async def main(argv):
             LOG518 = True
         elif opt == "-d":
             DEBUG = True
+        elif opt == "-t":
+            TESTS = True
     
     if lat == None or lon == None:
         print(usage)
@@ -282,8 +408,11 @@ async def main(argv):
 
     tasks = [
         client_reader(server_reader),
-        polaris_init(server_writer)
+        polaris_init(server_writer),
     ]
+    
+    if TESTS:
+        tasks.append(polaris_test_move(server_writer))
 
     async with local_server:
         await asyncio.gather(*tasks)
