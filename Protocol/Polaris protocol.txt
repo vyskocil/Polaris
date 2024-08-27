@@ -1,0 +1,38 @@
+-> Mode astro
+
+1&285&2&mode:8;#
+1&520&2&state:1;#
+1&524&3&-1#
+1&305&2&step:2;#
+1&305&2&step:10;#
+1&305&2&step:6;#
+1&305&2&step:8;#
+1&305&2&step:4;#
+1&305&2&step:12;#
+1&305&2&step:13;#
+1&517&3&-1#					
+								285@mode:8;ret:0;#
+1&284&2&-1#
+								527@ret:1;#
+								524@state:1;#305@step:2;state:0;#305@step:10;state:0;s:10000,2000000,4000,20000000;#305@step:6;state:0;iso:100,800;#305@step:8;state:0;f:4.0,5.6;#305@step:4;priority:1,2,3;#305@step:12;startTime:00,00;nodeCnt:1;para:0/0.0;#305@step:13;runTime:-1;#284@mode:8;state:0;track:3;speed:0;halfSpeed:0;remNum:;runTime:;photoNum:;#
+								517@yaw:-0.129433;pitch:0.007087;roll:0.019950;#
+1&545&2&-1#
+								545@dir:0;#
+
+								
+-> Mode photo
+						
+1&285&2&mode:1;#
+1&520&2&state:0;#
+1&531&3&state:0;speed:0;#
+1&524&3&-1#
+								285@mode:1;ret:0;#
+								520@ret:0;#524@state:1;#
+1&284&2&-1#
+								284@mode:1;state:0;#
+1&517&3&-1#
+1&545&2&-1#
+								517@yaw:-0.129433;pitch:0.007093;roll:0.019947;#
+								545@dir:0;#
+								
+								

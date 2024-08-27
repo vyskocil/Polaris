@@ -1,0 +1,45 @@
+* Current state
+-> 1&284&2&-1#
+<- 284@mode:8;state:0;track:0;speed:0;halfSpeed:0;remNum:;runTime:;photoNum:;#
+
+* Change mode
+-> 1&285&2&mode:[1-9];#
+mode: 1 Photo, 8 Astro
+
+* Current rotation angles
+<- 517@yaw:0.046297;pitch:-0.000373;roll:0.000739;#
+
+* Current heading
+<- 518@w:-0.2342571;x:0.6774524;y:0.6512215;z:0.2491834;w:0.2491834;x:0.6774524;y:0.6512215;z:0.2342571;compass:182.8994446;alt:-50.0015984;#
+
+* Goto
+-> 1&519&3&state:1;yaw:178.018;pitch:50.016;lat:43.616;track:1;speed:0;lng:6.972;#
+<- 519@ret:1;track:1;#
+... Polaris moving
+<- 519@ret:0;track:1;#
+Error: 519@ret:-1;track:1;#
+
+* iPhone compass
+-> 1&527&3&compass:6;lat:43.616;lng:6.972;#
+<- 527@ret:0;#
+
+* Start/stop tracking
+-> 1&531&3&state:[0|1];speed:0;# 
+state: 0 stop tracking, 1 start tracking
+
+* Space used
+-> 1&775&2&-1#
+<- 775@status:1;totalspace:60860;freespace:60410;usespace:450;#
+
+* Battery
+-> 1&778&2&-1#
+<- 778@capacity:47;charge:0;#
+
+
+* Errors
+797@errorCode:-1203;
+
+
+
+
+
