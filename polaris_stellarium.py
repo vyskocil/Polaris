@@ -143,7 +143,7 @@ async def polaris_goto(writer, az, alt, tracking):
     return ret_dict
 
 
-async def polaris_move(writer, az_axis, alt_axis, time):
+async def polaris_move(writer, az_axis, alt_axis, astro_axis, time):
     """
     polaris_move is used to turn the head around the Azm and Alt axis at some speed
     and duration a fixed amount of time.
@@ -151,11 +151,13 @@ async def polaris_move(writer, az_axis, alt_axis, time):
     :param writer: is used to send commands to the Polaris
     :param az_axis: rotation speed around the Azm axis between -5 and 5
     :param alt_axis: rotation speed around the Alt axis between -5 and 5
+    :param astro_axis: rotation speed around the Astro axis between -5 and 5
     :param time: duration of the rotation in seconds
     """
     global response_queues
     cmd_az = '532'
     cmd_alt = '533'
+    cmd_astro = '534'
     
     if az_axis != 0:
         if az_axis > 0:
@@ -175,6 +177,15 @@ async def polaris_move(writer, az_axis, alt_axis, time):
             msg = f"1&{cmd_alt}&3&key:1;state:1;level:{level};#"
         await polaris_send_msg(writer, msg)
 
+    if astro_axis != 0:
+        if astro_axis > 0:
+            level = astro_axis if astro_axis <= 5 else 5
+            msg = f"1&{cmd_astro}&3&key:0;state:1;level:{level};#"
+        else:
+            level = -astro_axis if astro_axis >= -5 else 5
+            msg = f"1&{cmd_astro}&3&key:1;state:1;level:{level};#"
+        await polaris_send_msg(writer, msg)
+
     await asyncio.sleep(time)
 
     if az_axis != 0:
@@ -191,14 +202,22 @@ async def polaris_move(writer, az_axis, alt_axis, time):
             level = alt_axis if alt_axis <= 5 else 5
             msg = f"1&{cmd_alt}&3&key:0;state:0;level:{level};#"
         else:
-            level = -az_axis if az_axis >= -5 else 5
+            level = -alt_axis if alt_axis >= -5 else 5
             msg = f"1&{cmd_alt}&3&key:1;state:0;level:{level};#"
         await polaris_send_msg(writer, msg)
 
+    if astro_axis != 0:
+        if astro_axis > 0:
+            level = astro_axis if astro_axis <= 5 else 5
+            msg = f"1&{cmd_astro}&3&key:0;state:0;level:{level};#"
+        else:
+            level = -astro_axis if astro_axis >= -5 else 5
+            msg = f"1&{cmd_astro}&3&key:1;state:0;level:{level};#"
+        await polaris_send_msg(writer, msg)
 
 async def polaris_stop_move(writer):
     """
-    polaris_move is used to stop the rotation on both Azm and Alt axis.
+    polaris_move is used to stop the rotation on both Azm, Alt and Astro axis.
 
     :param writer: is used to send commands to the Polaris
     """
@@ -206,12 +225,16 @@ async def polaris_stop_move(writer):
     global response_queues
     cmd_az = '532'
     cmd_alt = '533'
-    
+    cmd_astro = '534'
+
     level = 0
     msg = f"1&{cmd_az}&3&key:0;state:0;level:{level};#"
     await polaris_send_msg(writer, msg)
 
     msg = f"1&{cmd_alt}&3&key:1;state:0;level:{level};#"
+    await polaris_send_msg(writer, msg)
+    
+    msg = f"1&{cmd_astro}&3&key:1;state:0;level:{level};#"
     await polaris_send_msg(writer, msg)
 
 
@@ -228,22 +251,28 @@ async def polaris_test_move(writer):
     print("Stop tracking...")
     await polaris_start_stop_tracking(writer, 0)
     print("Move on az axis...")
-    await polaris_move(writer, speed, 0, duration)
+    await polaris_move(writer, speed, 0, 0, duration)
     await asyncio.sleep(3)
     print("Move in opposite direction on az axis...")
-    await polaris_move(writer, -speed, 0, duration)
+    await polaris_move(writer, -speed, 0, 0, duration)
     await asyncio.sleep(3)
     print("Move on alt axis...")
-    await polaris_move(writer, 0, speed, duration)
+    await polaris_move(writer, 0, speed, 0, duration)
     await asyncio.sleep(3)
     print("Move in opposite direction on alt axis...")
-    await polaris_move(writer, 0, -speed, duration)
+    await polaris_move(writer, 0, -speed, 0, duration)
+    await asyncio.sleep(3)
+    print("Move on astro axis...")
+    await polaris_move(writer, 0, 0, speed, duration)
+    await asyncio.sleep(3)
+    print("Move in opposite direction on astro axis...")
+    await polaris_move(writer, 0, 0, -speed, duration)
     await asyncio.sleep(3)
     print("Move on both axis...")
-    await polaris_move(writer, speed, speed, duration)
+    await polaris_move(writer, speed, speed, speed, duration)
     await asyncio.sleep(3)
     print("Move in opposite direction on both axis...")
-    await polaris_move(writer, -speed, -speed, duration)
+    await polaris_move(writer, -speed, -speed, -speed, duration)
     await asyncio.sleep(3)
     print("Stop moving...")
     await polaris_stop_move(writer)
