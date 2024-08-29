@@ -215,6 +215,7 @@ async def polaris_move(writer, az_axis, alt_axis, astro_axis, time):
             msg = f"1&{cmd_astro}&3&key:1;state:0;level:{level};#"
         await polaris_send_msg(writer, msg)
 
+
 async def polaris_stop_move(writer):
     """
     polaris_move is used to stop the rotation on both Azm, Alt and Astro axis.
@@ -278,6 +279,74 @@ async def polaris_test_move(writer):
     await polaris_stop_move(writer)
     await asyncio.sleep(1)
     print ("End testing move commands")
+
+
+async def polaris_reset_rotation(writer, az_axis, alt_axis, astro_axis):
+    """
+    polaris_reset_rotation is used to reset the rotation around the 3 axis,
+    going home position
+
+    :param writer: is used to send commands to the Polaris
+    :param az_axis: if true reset the Azm axis
+    :param alt_axis: if true reset the Alt axis
+    :param astro_axis: if true reset the Astro axis
+    """
+    cmd = '523'
+    if az_axis:
+        msg = f"1&523&3&axis:1;#"
+        await polaris_send_msg(writer, msg)
+        
+    if alt_axis:
+        msg = f"1&523&3&axis:2;#"
+        await polaris_send_msg(writer, msg)
+    
+    if astro_axis:
+        msg = f"1&523&3&axis:3;#"
+        await polaris_send_msg(writer, msg)
+    
+
+async def polaris_test_reset_rotation(writer):
+    await asyncio.sleep(10)
+    print("Reset rotation on az axis...")
+    await polaris_reset_rotation(writer, True, 0, 0)
+    await asyncio.sleep(5)
+    print("Reset rotation on alt axis...")
+    await polaris_reset_rotation(writer, 0, True, 0)
+    await asyncio.sleep(5)
+    print("Reset rotation on astro axis...")
+    await polaris_reset_rotation(writer, 0, 0, True)
+
+
+async def polaris_new_alignment(writer, az, alt):
+    """
+    polaris_new_alignment is used to do a new celestial alignment with star at (az,alt)
+
+    :param writer: is used to send commands to the Polaris
+    :param az: the azimut of the star used for celestial alignment
+    :param alt: the altitude of the star used for celestial alignment
+    """
+    global lat, lon
+    
+    # goto (az,alt), stop tracking
+    await polaris_goto(writer, az, alt, 0)
+    
+    # celestial alignment step 1
+    polaris_az = 360 - az if az>180 else -az
+    cmd = '530'
+    msg = f"1&{cmd}&3&step:1;yaw:{polaris_az};pitch:{alt};lat:{lat};num:1;lng:{lon};#"
+    await polaris_send_msg(writer, msg)
+    
+    await asyncio.sleep(15) # delay to align the star in the iPhone app
+
+    # celestial alignment step 2 (validation)
+    msg = f"1&{cmd}&3&step:2;yaw:{polaris_az};pitch:{alt};lat:{lat};num:1;lng:{lon};#"
+    await polaris_send_msg(writer, msg)
+
+
+async def polaris_test_new_alignment(writer):
+    await asyncio.sleep(10)
+    print("New celestial position alignement...")
+    await polaris_new_alignment(writer, 120, 45)
 
 
 async def polaris_get_current_mode(writer):
@@ -441,7 +510,9 @@ async def main(argv):
     ]
     
     if TESTS:
-        tasks.append(polaris_test_move(server_writer))
+#        tasks.append(polaris_test_move(server_writer))
+#        tasks.append(polaris_test_reset_rotation(server_writer))
+        tasks.append(polaris_test_new_alignment(server_writer))
 
     async with local_server:
         await asyncio.gather(*tasks)

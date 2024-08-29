@@ -32,10 +32,19 @@ If a error occur:
 
 * Reset rotation on a axis
 -> 1&523&3&axis:[1|2|3];#
+axis: 1 for az axis, 2 for alt axis, 3 for astro axis
 
 * iPhone compass
 -> 1&527&3&compass:6;lat:43.616;lng:6.972;#
 <- 527@ret:0;#
+
+* Celestial alignement step 1 (after a 519 goto cmd with track:0)
+-> 1&530&3&step:1;yaw:-0.698;pitch:43.084;lat:43.617;num:1;lng:6.972;#
+<- 530@step:1;ret:0;#
+
+* Celestial alignement step 2 (after step 1 and centering the alignment object with rotation cmd)
+-> 1&530&3&step:2;yaw:-0.698;pitch:43.084;lat:43.617;num:1;lng:6.972;#
+<- 530@step:2;ret:0;#
 
 * Start/stop tracking
 -> 1&531&3&state:[0|1];speed:0;# 
@@ -44,7 +53,7 @@ state: 0 stop tracking, 1 start tracking
 * Rotation adjust around axis
 -> 1&532&3&key:[0|1];state:[0|1|2];level:[0...5];#
 key: direction of the rotation
-state: 0 stop, 1 start, 2 slowdown ?
+state: 0 stop, 1 start, 2 seems identical to 1, iPhone app send 1 then 2 then 0 to stop
 level: speed
 
 * Rotation adjust around axis
