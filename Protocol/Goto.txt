@@ -1,0 +1,22 @@
+Goto Polaris
+
+-> 1&519&3&state:1;yaw:1.001;pitch:43.750;lat:43.616;track:0;speed:0;lng:6.972;#
+<- 519@ret:1;track:0;#
+
+-> 1&530&3&step:1;yaw:1.001;pitch:43.750;lat:43.616;num:1;lng:6.972;#
+<- 530@step:1;ret:0;#
+
+-> 1&530&3&step:2;yaw:1.001;pitch:43.750;lat:43.616;num:1;lng:6.972;#
+<- 530@step:2;ret:0;#
+
+Goto Jupiter 2024-04-20 19:24:12 RA/DEC J2000 3h16m46.19s / 17°21'39.8"  Az/Alt 267°57'52.0" / 27°55'26.0"
+
+-> 1&519&3&state:1;yaw:92.063;pitch:27.942;lat:43.616;track:1;speed:0;lng:6.972;#
+<- 519@ret:1;track:1;#
+
+Goto Polaris 2024-04-20 19:24:48 RA/DEC J2000 2h30m12.96s / 89°15'53.4" Az/Alt 359°09'56.2" / 43°48'25.4"
+
+-> 1&519&3&state:1;yaw:1.002;pitch:43.747;lat:43.616;track:1;speed:0;lng:6.972;#
+<- 519@ret:1;track:1;#
+
+
