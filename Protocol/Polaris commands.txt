@@ -6,7 +6,14 @@
 -> 1&285&2&mode:[1-9];#
 mode: 1 Photo, 8 Astro
 
+* Quick rotation around axis
+-> 1&513&3&speed:[-2000...2000];#
+
+* Quick rotation around axis
+-> 1&514&3&speed:[-2000...2000];#
+
 * Current rotation angles
+-> 1&517&3&-1#
 <- 517@yaw:0.046297;pitch:-0.000373;roll:0.000739;#
 
 * Current heading
@@ -17,7 +24,14 @@ mode: 1 Photo, 8 Astro
 <- 519@ret:1;track:1;#
 ... Polaris moving
 <- 519@ret:0;track:1;#
-Error: 519@ret:-1;track:1;#
+If a error occur: 
+<- 519@ret:-1;track:1;#
+
+* Quick rotation around axis
+-> 1&521&3&speed:1049;#
+
+* Reset rotation on a axis
+-> 1&523&3&axis:[1|2|3];#
 
 * iPhone compass
 -> 1&527&3&compass:6;lat:43.616;lng:6.972;#
@@ -27,6 +41,18 @@ Error: 519@ret:-1;track:1;#
 -> 1&531&3&state:[0|1];speed:0;# 
 state: 0 stop tracking, 1 start tracking
 
+* Rotation adjust around axis
+-> 1&532&3&key:[0|1];state:[0|1|2];level:[0...5];#
+key: direction of the rotation
+state: 0 stop, 1 start, 2 slowdown ?
+level: speed
+
+* Rotation adjust around axis
+-> 1&533&3&key:[0|1];state:[0|1|2];level:[0...5];#
+
+* Rotation adjust around astro axis
+-> 1&534&3&key:[0|1];state:[0|1|2];level:[0...5];#
+
 * Space used
 -> 1&775&2&-1#
 <- 775@status:1;totalspace:60860;freespace:60410;usespace:450;#
@@ -34,7 +60,6 @@ state: 0 stop tracking, 1 start tracking
 * Battery
 -> 1&778&2&-1#
 <- 778@capacity:47;charge:0;#
-
 
 * Errors
 797@errorCode:-1203;
