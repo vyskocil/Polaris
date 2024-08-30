@@ -22,7 +22,7 @@ Here is a exchange sample when the client application switch the Polaris to Phot
 | 								| 517@yaw:-0.129433;pitch:0.007093;roll:0.019947;# |
 |								| 545@dir:0;# |
 
-To be continued...
+More in the Wiki section...
 
 ## polaris_stellarium.py
 
@@ -62,9 +62,5 @@ Polaris communication init... done
 Then you should `Connect` the telescope you added in the Stellarium setting up phase. 
 
 Now you may use Stellarium to pilot the Polaris !
-
-#### Testing the rotations around the alt and azm axis
-
-If you add the `-t` flag to the ```polaris_stellarium.py``` command line args after 10s the Polaris will demonstrate some rotations around the alt and azm axis.
 
 
