@@ -3,6 +3,9 @@
 import sys
 assert sys.version_info >= (3, 0)
 
+import warnings
+warnings.filterwarnings("ignore", module="urllib3")
+
 import os
 import getopt
 import re
@@ -105,7 +108,7 @@ async def main(argv):
     global LOGGING, DEBUG, TESTS
     global local_port
     global alpaca_port
-
+    
     usage = f"{os.path.basename(sys.argv[0])} [-dhl]  --StellariumPort <Stellarium port> --AlpacaPort <Alpca port>"
     try:
         opts, args = getopt.getopt(argv,"dhl",["StellariumPort=", "AlpacaPort="])
