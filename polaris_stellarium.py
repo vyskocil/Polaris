@@ -28,6 +28,7 @@ LOGGING = False
 LOG518 = False
 DEBUG = False
 TESTS = False
+ALLMODES = False
 
 
 ####### Polaris
@@ -317,6 +318,98 @@ async def polaris_test_reset_rotation(writer):
     await polaris_reset_rotation(writer, 0, 0, True)
 
 
+async def polaris_rotate_az(writer, speed, time):
+    """
+    polaris_rotate_az rotate the head around az axis for a given time and speed
+
+    :param writer: is used to send commands to the Polaris
+    :param speed: speed between -2000 and 2000, positive value turn clockwise
+    :param time: rotation duration in seconds
+    """
+    cmd = '513'
+    msg = f"1&{cmd}&3&speed:0;#"
+    await polaris_send_msg(writer, msg)
+    
+    msg = f"1&513&3&speed:{speed};#"
+    for t in range(0, time*20):
+        await polaris_send_msg(writer, msg)
+        await asyncio.sleep(0.05)
+        
+async def polaris_rotate_alt(writer, speed, time):
+    """
+    polaris_rotate_alt rotate the head around alt axis for a given time and speed
+
+    :param writer: is used to send commands to the Polaris
+    :param speed: speed between -2000 and 2000, positive value turn clockwise
+    :param time: rotation duration in seconds
+    """
+    cmd = '514'
+    msg = f"1&{cmd}&3&speed:0;#"
+    await polaris_send_msg(writer, msg)
+    
+    msg = f"1&{cmd}&3&speed:{speed};#"
+    for t in range(0, time*20):
+        await polaris_send_msg(writer, msg)
+        await asyncio.sleep(0.05)
+        
+async def polaris_rotate_astro(writer, speed, time):
+    """
+    polaris_rotate_astro rotate the head around astro axis for a given time and speed
+
+    :param writer: is used to send commands to the Polaris
+    :param speed: speed between -2000 and 2000, positive value turn clockwise
+    :param time: rotation duration in seconds
+    """
+    cmd = '521'
+    msg = f"1&{cmd}&3&speed:0;#"
+    await polaris_send_msg(writer, msg)
+    
+    msg = f"1&{cmd}&3&speed:{speed};#"
+    for t in range(0, time*20):
+        await polaris_send_msg(writer, msg)
+        await asyncio.sleep(0.05)
+    
+async def polaris_test_rotate(writer):
+    await asyncio.sleep(10)
+    print("Rotate around az axis clockwise at low speed...")
+    await polaris_rotate_az(writer, 500, 10)
+    await asyncio.sleep(3)
+    print("Rotate around az axis clockwise at hight speed...")
+    await polaris_rotate_az(writer, 2000, 10)
+    await asyncio.sleep(3)
+    print("Rotate around az axis counter clockwise at low speed...")
+    await polaris_rotate_az(writer, -500, 10)
+    await asyncio.sleep(3)
+    print("Rotate around az axis counter clockwise at hight speed...")
+    await polaris_rotate_az(writer, -2000, 10)
+    await asyncio.sleep(3)
+    
+    print("Rotate around alt axis clockwise at low speed...")
+    await polaris_rotate_alt(writer, 500, 10)
+    await asyncio.sleep(3)
+    print("Rotate around alt axis clockwise at hight speed...")
+    await polaris_rotate_alt(writer, 2000, 10)
+    await asyncio.sleep(3)
+    print("Rotate around alt axis counter clockwise at low speed...")
+    await polaris_rotate_alt(writer, -500, 10)
+    await asyncio.sleep(3)
+    print("Rotate around alt axis counter clockwise at hight speed...")
+    await polaris_rotate_alt(writer, -2000, 10)
+    await asyncio.sleep(3)
+    
+    print("Rotate around astro axis clockwise at low speed...")
+    await polaris_rotate_astro(writer, 500, 10)
+    await asyncio.sleep(3)
+    print("Rotate around astro axis clockwise at hight speed...")
+    await polaris_rotate_astro(writer, 2000, 10)
+    await asyncio.sleep(3)
+    print("Rotate around astro axis counter clockwise at low speed...")
+    await polaris_rotate_astro(writer, -500, 10)
+    await asyncio.sleep(3)
+    print("Rotate around astro axis counter clockwise at hight speed...")
+    await polaris_rotate_astro(writer, -2000, 10)
+    await asyncio.sleep(3)
+
 async def polaris_new_alignment(writer, az, alt):
     """
     polaris_new_alignment is used to do a new celestial alignment with star at (az,alt)
@@ -366,12 +459,15 @@ async def polaris_init(writer):
     global response_queues
     print("Polaris communication init...")
     ret_dict = await polaris_get_current_mode(writer)
-    if  'mode' in ret_dict and int(ret_dict['mode']) == 8:
-        if 'track' in ret_dict and int(ret_dict['track']) == 3:
-            raise ValueError('Polaris is in astro mode but not properly setup, please finish the astro mode setup with the mobile app.')
-        print("Polaris communication init... done")
+    if ALLMODES:
+        print(f"Current mode: {ret_dict['mode']}")
     else:
-        raise ValueError('Polaris is not in astro mode, please use the mobile app to setup the astro mode.')
+        if  'mode' in ret_dict and int(ret_dict['mode']) == 8:
+            if 'track' in ret_dict and int(ret_dict['track']) == 3:
+                raise ValueError('Polaris is in astro mode but not properly setup, please finish the astro mode setup with the mobile app.')
+            print("Polaris communication init... done")
+        else:
+            raise ValueError('Polaris is not in astro mode, please use the mobile app to setup the astro mode.')
 
 
 ####### Stellarium
@@ -454,13 +550,13 @@ async def handle_local_input(server_writer, reader, writer):
                 print(f"Goto Az.: {az} Alt.: {alt} failed")
 
 async def main(argv):
-    global LOGGING, LOG518, DEBUG, TESTS
+    global LOGGING, LOG518, DEBUG, TESTS, ALLMODES
     global response_queues
     global lat, lon
 
-    usage = f"{os.path.basename(sys.argv[0])} [-dfhlLt]--lat <latitude> --lon <longitude>"
+    usage = f"{os.path.basename(sys.argv[0])} [-adfhlLt]--lat <latitude> --lon <longitude>"
     try:
-        opts, args = getopt.getopt(argv,"dhlLt",["lat=","lon="])
+        opts, args = getopt.getopt(argv,"adhlLt",["lat=","lon="])
     except getopt.GetoptError:
         print (usage)
         sys.exit(2)
@@ -481,6 +577,8 @@ async def main(argv):
             DEBUG = True
         elif opt == "-t":
             TESTS = True
+        elif opt == "-a":
+            ALLMODES = True
     
     if lat == None or lon == None:
         print(usage)
@@ -512,7 +610,8 @@ async def main(argv):
     if TESTS:
 #        tasks.append(polaris_test_move(server_writer))
 #        tasks.append(polaris_test_reset_rotation(server_writer))
-        tasks.append(polaris_test_new_alignment(server_writer))
+#        tasks.append(polaris_test_new_alignment(server_writer))
+        tasks.append(polaris_test_rotate(server_writer))
 
     async with local_server:
         await asyncio.gather(*tasks)
