@@ -18,9 +18,6 @@ import ephem
 
 ####### Globals
 
-lat = None
-lon = None
-
 local_port = 10001
 
 alpaca_server = '127.0.0.1'
@@ -108,11 +105,10 @@ async def main(argv):
     global LOGGING, DEBUG, TESTS
     global local_port
     global alpaca_port
-    global lat, lon
 
-    usage = f"{os.path.basename(sys.argv[0])} [-dhl] --lat <latitude> --lon <longitude> --StellariumPort <Stellarium port> --AlpacaPort <Alpca port>"
+    usage = f"{os.path.basename(sys.argv[0])} [-dhl]  --StellariumPort <Stellarium port> --AlpacaPort <Alpca port>"
     try:
-        opts, args = getopt.getopt(argv,"dhl",["lat=","lon=","StellariumPort=", "AlpacaPort="])
+        opts, args = getopt.getopt(argv,"dhl",["StellariumPort=", "AlpacaPort="])
     except getopt.GetoptError:
         print (usage)
         sys.exit(2)
@@ -120,10 +116,6 @@ async def main(argv):
         if opt == '-h':
             print (usage)
             sys.exit()
-        elif opt == "--lat":
-            lat = float(arg)
-        elif opt == "--lon":
-            lon = float(arg)
         elif opt == "--StellariumPort":
             local_port = int(arg)
         elif opt == "--AlpcaPort":
@@ -133,11 +125,6 @@ async def main(argv):
         elif opt == "-d":
             DEBUG = True
     
-    if lat == None or lon == None:
-        print(usage)
-        sys.exit(2)
-
-    print (f"Current location: latitude={lat} longitude={lon}")
     print (f"Stellarium port={local_port}")
     print (f"Alpaca port={alpaca_port}")
 
