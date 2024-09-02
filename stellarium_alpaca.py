@@ -118,7 +118,7 @@ async def main(argv):
             sys.exit()
         elif opt == "--StellariumPort":
             local_port = int(arg)
-        elif opt == "--AlpcaPort":
+        elif opt == "--AlpacaPort":
             alpaca_port = int(arg)
         elif opt == "-l":
             LOGGING = True
