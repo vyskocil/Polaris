@@ -72,16 +72,7 @@ def decode_stellarium_packet(s):
     ra = (24*ra)/0x100000000
     dec = (90*dec)/0x40000000
 
-    observer = ephem.Observer()
-    observer.long = dec2dms(lon)
-    observer.lat = dec2dms(lat)
-    observer.elevation = 0
-    observer.pressure = 0 # no refraction correction.
-    observer.epoch = ephem.J2000
-    observer.date = ephem.Date(datetime.fromtimestamp(t/1E6, tz=timezone.utc))
-
     if DEBUG:
-        print(f"<<< Stellarium: Observer location lat={observer.lat} lon={observer.lon}")
         print(f"<<< Stellarium: t={t} ra={ra} dec={dec}")
     
     return (ra, dec)
